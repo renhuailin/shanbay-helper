@@ -44,15 +44,17 @@ setInterval(() => {
     const word = $("div[class^='VocabPronounce_word']")[0].innerText;
     chrome.runtime.sendMessage({ action: 'collins', word }, (response) => {
       ele.replaceWith(response.collins);
-      sideBar(response);
-      rank(response);
-      mergeNotes();
+      // sideBar(response);
+      // rank(response);
+      // mergeNotes();
     });
-    chrome.runtime.sendMessage({ action: 'wordsmyth', word }, (response) => {
-      console.log(response);
-      if (response.syllabification) {
-        $("div[class^='VocabPronounce_word']").text(response.syllabification);
-      }
-    });
+
+    /* don't fetch syllabification */
+    // chrome.runtime.sendMessage({ action: 'wordsmyth', word }, (response) => {
+    //   console.log(response);
+    //   if (response.syllabification) {
+    //     $("div[class^='VocabPronounce_word']").text(response.syllabification);
+    //   }
+    // });
   }
 }, 1000);
