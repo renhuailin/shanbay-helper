@@ -3,32 +3,39 @@
   "version": "0.1.6",
   "author": "zerol",
   "description": "为扇贝单词网页版添加免费的柯林斯释义，以及一些额外的小功能。",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "background": {
-    "scripts": [
-      "third-party/jquery-3.4.1.js",
-      "src/js/background.js"
-    ]
+    "service_worker": "src/js/background.js"
   },
-  "icons": { "128": "static/icon128.png" },
-  "browser_action": {
+  "icons": {
+    "128": "static/icon128.png"
+  },
+  "action": {
     "default_icon": "static/icon128.png",
     "default_popup": "popup.html",
     "default_title": "扇贝助手重制版"
   },
   "content_scripts": [
     {
-      "css": ["src/css/words.css"],
+      "css": [
+        "src/css/words.css"
+      ],
       "js": [
         "third-party/jquery-3.4.1.js",
         "src/js/words.js"
       ],
-      "matches": ["https://web.shanbay.com/wordsweb/*"]
+      "matches": [
+        "https://web.shanbay.com/wordsweb/*"
+      ]
     }
   ],
-  "permissions": [
+  "permissions": [],
+  "host_permissions": [
     "https://dict.youdao.com/",
     "https://www.wordsmyth.net/",
     "*://*.shanbay.com/*"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
   ]
 }
