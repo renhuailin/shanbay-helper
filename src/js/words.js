@@ -94,50 +94,59 @@ function paserYoudaoResult(youdaoHtml) {
 }
 
 setInterval(async () => {
-  const ele = $("div[class^='BayTrans_paraphrase']");
-  // if (ele.length > 0 && ele[0].parentElement.attributes["id"] === undefined) {
-  if (ele.length > 0) {
+  try {
+    const ele = $("div[class^='BayTrans_paraphrase']");
+    // if (ele.length > 0 && ele[0].parentElement.attributes["id"] === undefined) {
+    if (ele.length > 0) {
 
-    if (ele[0].parentElement.attributes["id"] === undefined || ele[0].parentElement.attributes["id"] !== 'collinsResult') {
-      ele[0].parentElement.setAttribute('id', 'collinsResult');
-    }
-    const word = $("div[class^='VocabPronounce_word']")[0].innerText;
+      if (ele[0].parentElement.attributes["id"] === undefined || ele[0].parentElement.attributes["id"] !== 'collinsResult') {
+        ele[0].parentElement.setAttribute('id', 'collinsResult');
+      }
+      const word = $("div[class^='VocabPronounce_word']")[0].innerText;
 
-    if (!g_fetching) {
-      let record = await findWordInIndexedDB(word)
-      if (record !== undefined) {
-        console.log(`Find word ${word} in local indexedDB`);
-        ele.replaceWith(record.meanings);
-        g_fetching = false
-        return
+      if (!g_fetching) {
+        let record = await findWordInIndexedDB(word)
+        if (record !== undefined) {
+          console.log(`Find word ${word} in local indexedDB`);
+          ele.replaceWith(record.meanings);
+          g_fetching = false
+          return
+        }
+
+        console.log(`cannot find word ${word} in local indexedDB,try to fetch it from web.`);
+        // can not find this word in 'collins' table in local indexedDB,
+        // so fetch it from dict.youdao.com
+        g_fetching = true
+        chrome.runtime.sendMessage({ action: 'collins', word }, (response) => {
+          // console.log(response);
+          if (response) {
+            try {
+              let collinsItem = paserYoudaoResult(response)
+              collinsItem.word = word
+              saveWordToIndexedDb(collinsItem)
+              ele.replaceWith(collinsItem.meanings);
+              // sideBar(response);
+              // rank(response);
+              // mergeNotes();
+            } catch (error) {
+              g_fetching = false
+            }
+
+          } else {
+            console.log("invalid response!")
+          }
+          g_fetching = false
+        });
       }
 
-      console.log(`cannot find word ${word} in local indexedDB,try to fetch it from web.`);
-      // can not find this word in 'collins' table in local indexedDB,
-      // so fetch it from dict.youdao.com
-      g_fetching = true
-      chrome.runtime.sendMessage({ action: 'collins', word }, (response) => {
-        // console.log(response);
-        if (response) {
-          let collinsItem = paserYoudaoResult(response)
-          collinsItem.word = word
-          saveWordToIndexedDb(collinsItem)
-          ele.replaceWith(collinsItem.meanings);
-          // sideBar(response);
-          // rank(response);
-          // mergeNotes();
-        } else {
-          console.log("invalid response!")
-        }
-        g_fetching = false
-      });
+      // chrome.runtime.sendMessage({ action: 'wordsmyth', word }, (response) => {
+      //   console.log(response);
+      //   if (response.syllabification) {
+      //     $("div[class^='VocabPronounce_word']").text(response.syllabification);
+      //   }
+      // });
     }
-
-    // chrome.runtime.sendMessage({ action: 'wordsmyth', word }, (response) => {
-    //   console.log(response);
-    //   if (response.syllabification) {
-    //     $("div[class^='VocabPronounce_word']").text(response.syllabification);
-    //   }
-    // });
+  } catch (error) {
+    console.log(error)
   }
 }, 300);
