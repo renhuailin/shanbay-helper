@@ -107,13 +107,13 @@ setInterval(async () => {
       if (!g_fetching) {
         let record = await findWordInIndexedDB(word)
         if (record !== undefined) {
-          console.log(`Find word ${word} in local indexedDB`);
+          console.log(`Found the word ${word} in the local indexedDB`);
           ele.replaceWith(record.meanings);
           g_fetching = false
           return
         }
 
-        console.log(`cannot find word ${word} in local indexedDB,try to fetch it from web.`);
+        console.log(`cannot find the word ${word} in local indexedDB,try to fetch it from web.`);
         // can not find this word in 'collins' table in local indexedDB,
         // so fetch it from dict.youdao.com
         g_fetching = true
