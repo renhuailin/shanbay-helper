@@ -39,6 +39,8 @@ function mergeNotes() {
 
 let g_db; //global indexedDB instance.
 let g_fetching = false;
+
+let ignoreCache = new Set();// a set to store the words that can not find in dict.youdao.com
 //Open indexedDB named shanbay_ding,if it doesn't exist ,create it.
 var request = window.indexedDB.open("shanbay_ding");
 request.onerror = function (event) {
@@ -104,6 +106,11 @@ setInterval(async () => {
       }
       const word = $("div[class^='VocabPronounce_word']")[0].innerText;
 
+      if (ignoreCache.has(word)) {
+        // console.log(`the ${word} is in ignore set, so don't fetch it again.`)
+        return
+      }
+
       if (!g_fetching) {
         let record = await findWordInIndexedDB(word)
         if (record !== undefined) {
@@ -129,9 +136,10 @@ setInterval(async () => {
               // rank(response);
               // mergeNotes();
             } catch (error) {
+              console.log(`cannot find the word ${word} in dict.youdoa.com, add it to the ignore-cache.`)
+              ignoreCache.add(word)
               g_fetching = false
             }
-
           } else {
             console.log("invalid response!")
           }
